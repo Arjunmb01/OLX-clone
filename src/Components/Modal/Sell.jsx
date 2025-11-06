@@ -23,6 +23,8 @@ const Sell = (props) => {
 
     const auth = UserAuth();
 
+    
+
     const handleImageUpload = (event)=>{
         if(event.target.files) setImage(event.target.files[0])
     }

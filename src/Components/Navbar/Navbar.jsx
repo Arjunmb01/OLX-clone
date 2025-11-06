@@ -1,26 +1,34 @@
-// Navbar.jsx
+
 import './Navbar.css';
 import logo from '../../assets/symbol.png';
 import search from '../../assets/search1.svg';
 import arrow from '../../assets/arrow-down.svg';
 import searchWt from '../../assets/search.svg';
 import addBtn from '../../assets/addButton.png';
-
-// ----- NEW ICONS -----
-import chatIcon from '../../assets/chat.svg';      // put your chat.svg here
-import heartIcon from '../../assets/heart.svg';      // put your heart.svg here
-// ---------------------
-
+import chatIcon from '../../assets/chat.svg';
+import heartIcon from '../../assets/heart.svg';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../Firebase/Firebase';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { signOut } from 'firebase/auth';
 
 const Navbar = (props) => {
     const [user] = useAuthState(auth);
     const { toggleModal, toggleModalSell } = props;
+    const navigate = useNavigate()
+
+    const [showDropdown, setSHowDropdown] = useState(false)
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        setSHowDropdown(false)
+        navigate('/')
+    }
 
     return (
         <div>
-            <nav className="fixed z-50 w-full overflow-auto p-2 pl-3 pr-3 shadow-md bg-slate-100 border-b-4 border-solid border-b-white flex items-center gap-4">
+            <nav className="fixed z-50 w-full overflow-visible p-2 pl-3 pr-3 shadow-md bg-slate-100 border-b-4 border-solid border-b-white">
 
                 <img src={logo} alt="" className="w-12" />
 
@@ -64,21 +72,50 @@ const Navbar = (props) => {
                         Login
                     </p>
                 ) : (
-                    <div className="flex items-center gap-4">
+                    <>
+                        <div className="flex items-center gap-4 relative" style={{ zIndex: 1000 }}>
+                            <button title="Chat"><img src={chatIcon} alt="" className="w-6 h-6" /></button>
+                            <button title="Favorites"><img src={heartIcon} alt="" className="w-6 h-6" /></button>
 
-                        <button className="relative" title="Chat">
-                            <img src={chatIcon} alt="Chat" className="w-6 h-6" />
-                        </button>
+                            <div className="relative">
+                                <p
+                                    style={{ color: '#002f34' }}
+                                    className="font-bold cursor-pointer flex items-center gap-1"
+                                    onClick={() => setSHowDropdown(v => !v)}
+                                >
+                                    {user.displayName?.split(' ')[0] || 'User'}
+                                    <svg
+                                        className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </p>
 
-                        <button className="relative" title="Favorites">
-                            <img src={heartIcon} alt="Favorites" className="w-6 h-6" />
-                        </button>
-
-                        <p style={{ color: '#002f34' }} className="font-bold ml-5 cursor-pointer">
-                            {user.displayName?.split(' ')[0]}
-                        </p>
-
-                    </div>
+                                {showDropdown && (
+                                    <div
+                                        className="absolute top-full left-0 bg-white border rounded shadow-md mt-1 min-w-max z-60"
+                                    >
+                                        <Link
+                                            to="/myads"
+                                            onClick={() => setSHowDropdown(false)}
+                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm border-t"
+                                        >
+                                            My Ads
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm border-t"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {/* + SELL BUTTON */}
@@ -88,12 +125,12 @@ const Navbar = (props) => {
                     className="w-24 mx-1 sm:ml-5 sm:mr-5 shadow-xl rounded-full cursor-pointer"
                     alt=""
                 />
-            </nav>
+            </nav >
 
             {/* SUB‑LIST (categories) */}
-            <div className="w-full relative z-0 flex shadow-md p-2 pt-20 pl-10 pr-10 sm:pl-44 md:pr-44 sub-lists">
+            < div className="w-full relative z-0 flex shadow-md p-2 pt-20 pl-10 pr-10 sm:pl-44 md:pr-44 sub-lists" >
                 <ul className="list-none flex items-center justify-between w-full">
-                    <div className="flex flex-shrink-0 items-center">
+                    <div className="flex shrink-0 ">
                         <p className="font-semibold uppercase all-cats">All categories</p>
                         <img className="w-4 ml-2" src={arrow} alt="" />
                     </div>
@@ -106,8 +143,8 @@ const Navbar = (props) => {
                     <li>Commercial & Other Vehicles</li>
                     <li>For rent : Houses & Apartments</li>
                 </ul>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

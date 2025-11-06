@@ -1,8 +1,8 @@
 
 import { initializeApp } from "firebase/app";
-import {getAuth, GoogleAuthProvider } from "firebase/auth"; 
-import {getStorage} from 'firebase/storage'
-import { collection, getDocs, getFirestore } from "firebase/firestore"; 
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage } from 'firebase/storage'
+import { collection, getDocs, getFirestore, query, where } from "firebase/firestore";
 
 
 const firebaseConfig = {
@@ -23,27 +23,42 @@ const fireStore = getFirestore(app);
 
 
 const fetchFromFirestore = async () => {
-    try {
-      const productsCollection = collection(fireStore, 'products');
-      const productSnapshot = await getDocs(productsCollection);
-      const productList = productSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) 
-      console.log("Fetched products from Firestore:", productList);
-      return productList;
-    } catch (error) {
-      console.error("Error fetching products from Firestore:", error);
-      return [];
-    }
-  };
-  
-
-  export {
-    auth,
-    provider,
-    storage,
-    fireStore,
-    fetchFromFirestore
+  try {
+    const productsCollection = collection(fireStore, 'products');
+    const productSnapshot = await getDocs(productsCollection);
+    const productList = productSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+    console.log("Fetched products from Firestore:", productList);
+    return productList;
+  } catch (error) {
+    console.error("Error fetching products from Firestore:", error);
+    return [];
   }
+};
+
+export const fetchMyAds = async (userId) => {
+  try {
+    const productsCollection = collection(fireStore, "products");
+    const q = query(productsCollection, where("userId", "==", userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error fetching user's products:", error);
+    return [];
+  }
+};
+
+
+export {
+  auth,
+  provider,
+  storage,
+  fireStore,
+  fetchFromFirestore
+}
 
