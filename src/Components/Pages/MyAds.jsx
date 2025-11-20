@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from "../Firebase/Firebase";
 import { fetchMyAds, fireStore } from "../Firebase/Firebase";
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { Modal, ModalBody } from 'flowbite-react';
-import Input from '../Input/Input'
+import Input from '../Input/Input';
 import fileUpload from '../../assets/fileUpload.svg';
 import close from '../../assets/close.svg';
 import loading from '../../assets/loading.gif';
+import Navbar from '../Navbar/Navbar';
+import Footer from '../Footer/Footer';
+import Login from '../Modal/Login';
+import Sell from '../Modal/Sell';
+import { ItemsContext } from '../Context/Items';
 
 const EditModal = ({ item, onClose, onSave }) => {
     const [title, setTitle] = useState(item.title);
@@ -19,11 +24,11 @@ const EditModal = ({ item, onClose, onSave }) => {
 
     const readImage = (file) =>
         new Promise((res, rej) => {
-            const r = new FileReader()
+            const r = new FileReader();
             r.onloadend = () => res(r.result);
-            r.onerror = rej
-            r.readAsDataURL(file)
-        })
+            r.onerror = rej;
+            r.readAsDataURL(file);
+        });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -100,11 +105,54 @@ const EditModal = ({ item, onClose, onSave }) => {
     );
 };
 
+const EmptyState = ({ onStartSelling }) => {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+            {/* Empty State Illustration */}
+            <div className="mb-8">
+                <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+                    {/* Teal circle */}
+                    <circle cx="60" cy="80" r="45" fill="#23E5DB" opacity="0.8"/>
+                    {/* Dark blue circle */}
+                    <circle cx="140" cy="100" r="55" fill="#002F34" opacity="0.9"/>
+                    {/* Pink circle */}
+                    <circle cx="100" cy="140" r="35" fill="#FF6B9D" opacity="0.8"/>
+                    {/* Light blue circle */}
+                    <circle cx="130" cy="60" r="25" fill="#4A90E2" opacity="0.7"/>
+                </svg>
+            </div>
+
+            {/* Text Content */}
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                You haven't listed anything yet
+            </h2>
+            <p className="text-gray-500 mb-8 text-center">
+                Let go of what you<br />don't use anymore
+            </p>
+
+            {/* Start Selling Button */}
+            <button
+                onClick={onStartSelling}
+                className="px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded hover:bg-blue-50 transition"
+            >
+                start selling
+            </button>
+        </div>
+    );
+};
+
 const MyAds = () => {
     const [user] = useAuthState(auth);
     const [myItems, setMyItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [openModal, setModal] = useState(false);
+    const [openModalSell, setModalSell] = useState(false);
+    const itemsCtx = ItemsContext();
+    const prevModalSellRef = useRef(false);
+
+    const toggleModal = () => setModal(!openModal);
+    const toggleModalSell = () => setModalSell(!openModalSell);
 
     const loadMyAds = async () => {
         if (user) {
@@ -117,6 +165,14 @@ const MyAds = () => {
         loadMyAds();
     }, [user]);
 
+    // Reload ads when sell modal closes (in case a new item was added)
+    useEffect(() => {
+        if (prevModalSellRef.current && !openModalSell && user) {
+            loadMyAds();
+        }
+        prevModalSellRef.current = openModalSell;
+    }, [openModalSell, user]);
+
     const handleDelete = async () => {
         await deleteDoc(doc(fireStore, 'products', deletingId));
         setMyItems((prev) => prev.filter((i) => i.id !== deletingId));
@@ -124,93 +180,123 @@ const MyAds = () => {
     };
 
     const handleEditSave = () => {
-        loadMyAds();               
+        loadMyAds();
         setEditingItem(null);
     };
 
-    if (!user) return <p className="text-center pt-24">Please log in to see your ads.</p>;
+    if (!user) {
+        return (
+            <>
+                <Navbar toggleModal={toggleModal} toggleModalSell={toggleModalSell} />
+                <div className="pt-24 min-h-screen bg-gray-50">
+                    <p className="text-center pt-24 text-gray-600">Please log in to see your ads.</p>
+                </div>
+                <Footer />
+            </>
+        );
+    }
 
     return (
-        <div className="pt-24 p-4 min-h-screen">
-            <h1 className="text-2xl font-bold mb-6" style={{ color: '#002f34' }}>
-                My Ads
-            </h1>
-
-            {myItems.length === 0 ? (
-                <p className="text-center text-gray-600">You haven't posted any ads yet.</p>
-            ) : (
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {myItems.map((item) => (
-                        <div
-                            key={item.id}
-                            className="relative border border-gray-300 rounded-md p-4 bg-white shadow-sm"
-                        >
-
-                            <div className="cursor-default">
-                                <img
-                                    src={item.imageUrl || 'https://via.placeholder.com/150'}
-                                    alt={item.title}
-                                    className="w-full h-40 object-contain"
-                                />
-                                <h3 className="font-bold text-xl mt-2">₹ {item.price}</h3>
-                                <p className="text-sm text-gray-600">{item.category}</p>
-                                <p className="mt-1">{item.title}</p>
-                            </div>
-
-                            {/* Edit / Delete buttons */}
-                            <div className="flex gap-2 mt-3">
-                                <button
-                                    onClick={() => setEditingItem(item)}
-                                    className="flex-1 bg-teal-600 text-white py-1 rounded"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => setDeletingId(item.id)}
-                                    className="flex-1 bg-red-600 text-white py-1 rounded"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+        <>
+            <Navbar toggleModal={toggleModal} toggleModalSell={toggleModalSell} />
+            <Login toggleModal={toggleModal} status={openModal} />
+            <Sell 
+                setItems={itemsCtx?.setItems} 
+                toggleModalSell={toggleModalSell} 
+                status={openModalSell}
+            />
+            <div className="pt-2 min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="bg-white">
+                    <div className="max-w-7xl mx-auto px-4 py-4">
+                        <h1 className="text-xl font-semibold" style={{ color: '#002f34' }}>
+                            My Ads
+                        </h1>
+                    </div>
                 </div>
-            )}
 
-            {/* Edit Modal */}
-            {editingItem && (
-                <EditModal
-                    item={editingItem}
-                    onClose={() => setEditingItem(null)}
-                    onSave={handleEditSave}
-                />
-            )}
+                {/* Content */}
+                <div className="max-w-7xl mx-auto px-4 py-6">
+                    {myItems.length === 0 ? (
+                        <EmptyState onStartSelling={toggleModalSell} />
+                    ) : (
+                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            {myItems.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition"
+                                >
+                                    <div className="cursor-default">
+                                        <div className="h-48 bg-gray-100 flex items-center justify-center">
+                                            <img
+                                                src={item.imageUrl || 'https://via.placeholder.com/150'}
+                                                alt={item.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-xl mb-1">₹ {item.price}</h3>
+                                            <p className="text-sm text-gray-600 mb-2">{item.title}</p>
+                                            <p className="text-xs text-gray-500">{item.category}</p>
+                                        </div>
+                                    </div>
 
-            {/* Delete Confirmation */}
-            {deletingId && (
-                <Modal show={true} size="sm" popup onClose={() => setDeletingId(null)}>
-                    <ModalBody className="p-6 text-center">
-                        <p className="mb-4">Are you sure you want to delete this ad?</p>
-                        <div className="flex gap-3 justify-center">
-                            <button
-                                onClick={handleDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded"
-                            >
-                                Yes, Delete
-                            </button>
-                            <button
-                                onClick={() => setDeletingId(null)}
-                                className="px-4 py-2 bg-gray-300 rounded"
-                            >
-                                Cancel
-                            </button>
+                                    {/* Action Buttons */}
+                                    <div className="flex border-t">
+                                        <button
+                                            onClick={() => setEditingItem(item)}
+                                            className="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => setDeletingId(item.id)}
+                                            className="flex-1 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition border-l"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </ModalBody>
-                </Modal>
-            )}
-        </div>
+                    )}
+                </div>
+
+                {/* Edit Modal */}
+                {editingItem && (
+                    <EditModal
+                        item={editingItem}
+                        onClose={() => setEditingItem(null)}
+                        onSave={handleEditSave}
+                    />
+                )}
+
+                {/* Delete Confirmation */}
+                {deletingId && (
+                    <Modal show={true} size="sm" popup onClose={() => setDeletingId(null)}>
+                        <ModalBody className="p-6 text-center">
+                            <p className="mb-4 text-gray-700">Are you sure you want to delete this ad?</p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                >
+                                    Yes, Delete
+                                </button>
+                                <button
+                                    onClick={() => setDeletingId(null)}
+                                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </ModalBody>
+                    </Modal>
+                )}
+            </div>
+            <Footer />
+        </>
     );
 };
 
 export default MyAds;
-
