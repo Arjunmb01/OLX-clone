@@ -147,7 +147,7 @@ const Navbar = ({ toggleModal, toggleModalSell }) => {
                     </div>
                 </div>
 
-                {/* Categories / Sub-lists */}
+
                 <nav className="mt-1 border-t pt-2">
                     <div className={`overflow-x-auto sub-lists hide-scrollbar`}>
                         <ul className="flex gap-4 items-center whitespace-nowrap px-1 md:px-4">
@@ -167,7 +167,6 @@ const Navbar = ({ toggleModal, toggleModalSell }) => {
                 </nav>
             </div>
 
-            {/* Mobile panel */}
             {mobileOpen && (
                 <div className="md:hidden bg-white border-t shadow-inner">
                     <div className="px-4 py-3 space-y-3">

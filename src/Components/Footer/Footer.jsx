@@ -17,7 +17,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-50">
-      {/* Main Footer Content */}
+      
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           <div>
@@ -35,7 +35,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Trending Locations */}
+          
           <div>
             <h3 className="font-semibold text-black mb-3 text-xs uppercase tracking-wide">
               Trending Locations
@@ -51,7 +51,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* About Us */}
+          
           <div>
             <h3 className="font-semibold text-black mb-3 text-xs uppercase tracking-wide">
               About Us
@@ -67,7 +67,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* OLX */}
+          
           <div>
             <h3 className="font-semibold text-black mb-3 text-xs uppercase tracking-wide">
               OLX
@@ -83,13 +83,13 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Follow Us */}
+          
           <div>
             <h3 className="font-semibold text-black mb-3 text-xs uppercase tracking-wide">
               Follow Us
             </h3>
 
-            {/* Social Icons */}
+           
             <div className="flex space-x-2.5 mb-4">
               <a href="#" className="w-9 h-9 bg-white rounded-md flex items-center justify-center hover:bg-gray-100 transition shadow-sm">
                 <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
@@ -123,7 +123,7 @@ const Footer = () => {
               </a>
             </div>
 
-            {/* App Download Buttons */}
+            
             <div className="space-y-2.5">
               <a href="#" className="block">
                 <img
@@ -144,10 +144,10 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Footer - Partners & Copyright */}
+      
       <div className="bg-sky-600" style={{ backgroundColor: '#004896' }}>
         <div className="max-w-7xl mx-auto px-6 py-10">
-          {/* Partner Logos */}
+          
           <div className="flex flex-wrap items-center justify-around gap-8 mb-8">
             <div className="text-sm font-medium tracking-wide">CarTrade Tech GROUP</div>
             <div className="w-px h-14 bg-white opacity-30"></div>
@@ -158,7 +158,7 @@ const Footer = () => {
             <div className="text-sm font-medium tracking-wide">MOBILITY OUTLOOK</div>
           </div>
 
-          {/* Help and Copyright */}
+          
           <div className="flex flex-col md:flex-row justify-between items-center pt-4">
             <div className="flex items-center gap-2 mb-3 md:mb-0 text-sm">
               <a href="#" className="hover:underline">Help</a>

@@ -36,7 +36,7 @@ const Login = ({ toggleModal, status }) => {
         size="md"
         popup={true}
       >
-        {/* TOP CAROUSEL */}
+       
         <div
           onClick={(e) => e.stopPropagation()}
           className="bg-white p-4 pb-0 relative rounded-t-lg"
