@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { fireStore } from "../Firebase/Firebase";
 
 const Context = createContext(null);
-export const ItemsContext = ()=> useContext(Context) //customHook
+export const ItemsContext = ()=> useContext(Context) 
 
 export  const ItemsContextProvider = ({children})=>{
     const [items,setItems] = useState(null);
@@ -12,7 +12,7 @@ export  const ItemsContextProvider = ({children})=>{
         const fetchItemsFromFireStore = async ()=>{
 
             try {
-                const productsCollection = collection(fireStore,'products'); // firestore collection names are case-sensitive
+                const productsCollection = collection(fireStore,'products'); 
                 const productSnapshot = await getDocs(productsCollection)
                 const productsList = productSnapshot.docs.map(doc =>({
                     id:doc.id,
